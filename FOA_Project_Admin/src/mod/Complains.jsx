@@ -45,6 +45,7 @@ const Complains = () => {
   useEffect(() => {
     fetchCustomers();
     fetchComplaints();
+    console.log(messages);
   }, []);
 
   const fetchCustomers = async () => {
@@ -52,7 +53,7 @@ const Complains = () => {
     const customersSnapshot = await getDocs(customersCollection);
     const customersList = customersSnapshot.docs.map((doc) => ({
       id: doc.id,
-      name: doc.data().name,
+      email: doc.data().email,
     }));
     setCustomers(customersList);
     setFilteredCustomers(customersList);
@@ -60,8 +61,11 @@ const Complains = () => {
 
   const fetchComplaints = async () => {
     const complaintsRef = collection(db, "complaints");
-    const sentQuery = query(complaintsRef, where("mode", "==", "sent"));
-    const receivedQuery = query(complaintsRef, where("mode", "==", "received"));
+    const sentQuery = query(complaintsRef, where("mode", "==", "sentByAdmin"));
+    const receivedQuery = query(
+      complaintsRef,
+      where("mode", "==", "sentByCustomer")
+    );
 
     const [sentSnapshot, receivedSnapshot] = await Promise.all([
       getDocs(sentQuery),
@@ -71,7 +75,7 @@ const Complains = () => {
     const sentComplaints = sentSnapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
-      date: doc.data().date.toDate().toISOString().split("T")[0], 
+      date: doc.data().date.toDate().toISOString().split("T")[0],
     }));
 
     const receivedComplaints = receivedSnapshot.docs.map((doc) => ({
@@ -84,11 +88,13 @@ const Complains = () => {
       sent: sentComplaints,
       received: receivedComplaints,
     });
+
+    console.log(messages.sent);
   };
 
   useEffect(() => {
     const filtered = customers.filter((customer) =>
-      customer.name.toLowerCase().includes(searchQuery.toLowerCase())
+      customer.email?.toLowerCase().includes(searchQuery.toLowerCase())
     );
     setFilteredCustomers(filtered);
   }, [searchQuery, customers]);
@@ -105,11 +111,6 @@ const Complains = () => {
 
   const handleOpenCustomerDialog = () => setOpenCustomerDialog(true);
   const handleCloseCustomerDialog = () => setOpenCustomerDialog(false);
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setNewMessage({ ...newMessage, [name]: value });
-  };
 
   const handleCustomerSelect = (customerId) => {
     setSelectedCustomers((prev) =>
@@ -128,6 +129,11 @@ const Complains = () => {
   };
 
   const handleSubmit = async () => {
+    console.log(
+      newMessage.subject,
+      newMessage.content,
+      selectedCustomers.length > 0
+    );
     if (
       newMessage.subject &&
       newMessage.content &&
@@ -135,17 +141,17 @@ const Complains = () => {
     ) {
       try {
         const complaintsRef = collection(db, "complaints");
-
         const newComplaint = {
           subject: newMessage.subject,
           content: newMessage.content,
           date: serverTimestamp(),
-          mode: "sent",
+          mode: "sentByAdmin",
           customerIds: selectedCustomers,
           recipients: selectedCustomers.map(
-            (id) => customers.find((c) => c.id === id).name
+            (id) => customers.find((c) => c.id === id).email
           ),
         };
+        console.log(newComplaint);
 
         const docRef = await addDoc(complaintsRef, newComplaint);
         console.log("Complaint added with ID: ", docRef.id);
@@ -172,7 +178,7 @@ const Complains = () => {
         gutterBottom
         sx={{ fontWeight: "bold", color: "#333" }}
       >
-        Complaints
+        Messages
       </Typography>
 
       <Tabs value={tabValue} onChange={handleTabChange} sx={{ mb: 2 }}>
@@ -206,15 +212,16 @@ const Complains = () => {
                     {message.content}
                   </Typography>
                   {` — ${message.date}`}
-                  {message.recipients && (
-                    <Typography
-                      component="p"
-                      variant="body2"
-                      color="text.secondary"
-                    >
-                      To: {message.recipients.join(", ")}
-                    </Typography>
-                  )}
+
+                  <Typography
+                    component="p"
+                    variant="body2"
+                    color="text.secondary"
+                  >
+                    {message.mode == "sentByCustomer"
+                      ? `By: ${message.email} `
+                      : `To: ${message.recipients}`}
+                  </Typography>
                 </>
               }
             />
@@ -223,22 +230,24 @@ const Complains = () => {
       </List>
 
       <Dialog open={openDialog} onClose={handleCloseDialog}>
-        <DialogTitle>New Complaint</DialogTitle>
+        <DialogTitle>New Message</DialogTitle>
         <DialogContent>
           <TextField
             autoFocus
             margin="dense"
-            name="subject"
+            email="subject"
             label="Subject"
             type="text"
             fullWidth
             variant="outlined"
             value={newMessage.subject}
-            onChange={handleInputChange}
+            onChange={(e) => {
+              setNewMessage({ ...newMessage, subject: e.target.value });
+            }}
           />
           <TextField
             margin="dense"
-            name="content"
+            email="content"
             label="Message"
             type="text"
             fullWidth
@@ -246,7 +255,9 @@ const Complains = () => {
             multiline
             rows={4}
             value={newMessage.content}
-            onChange={handleInputChange}
+            onChange={(e) => {
+              setNewMessage({ ...newMessage, content: e.target.value });
+            }}
           />
           <Button onClick={handleOpenCustomerDialog} sx={{ mt: 2 }}>
             Select Recipients ({selectedCustomers.length})
@@ -264,7 +275,7 @@ const Complains = () => {
           <TextField
             autoFocus
             margin="dense"
-            name="search"
+            email="search"
             label="Search Customers"
             type="text"
             fullWidth
@@ -290,7 +301,7 @@ const Complains = () => {
                   onChange={() => handleCustomerSelect(customer.id)}
                 />
               }
-              label={customer.name}
+              label={customer.email}
             />
           ))}
         </DialogContent>

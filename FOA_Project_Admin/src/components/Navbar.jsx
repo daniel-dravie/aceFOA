@@ -1,7 +1,7 @@
 import React, { useState, useContext, useEffect } from "react";
 import { AuthContext } from "../context/AuthContext";
-import { db } from "../helpers/firebase"; 
-import { collection, getDocs, query,where } from "firebase/firestore";
+import { db } from "../helpers/firebase";
+import { collection, getDocs, query, where } from "firebase/firestore";
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import Toolbar from "@mui/material/Toolbar";
@@ -14,10 +14,13 @@ import Button from "@mui/material/Button";
 import Tooltip from "@mui/material/Tooltip";
 import MenuItem from "@mui/material/MenuItem";
 import LocalDiningIcon from "@mui/icons-material/LocalDining";
+import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
+import TextsmsIcon from "@mui/icons-material/Textsms";
 import Badge from "@mui/material/Badge";
-import { TapasRounded, People, SickRounded } from "@mui/icons-material";
+import { TapasRounded, People } from "@mui/icons-material";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import Avatar from "@mui/material/Avatar";
+import FoodBankIcon from "@mui/icons-material/FoodBank";
 import Profile from "../mod/Profile";
 
 const settings = ["Profile", "Logout"];
@@ -32,17 +35,19 @@ function Navbar() {
   const { adminID } = useParams();
   const [staffImage, setStaffImage] = useState("");
   const [staffName, setStaffName] = useState("");
-  const [complaintsCount, setComplaintsCount] = useState(0);
+  const [messagesCount, setMessagesCount] = useState(0);
   const { currentUser } = useContext(AuthContext);
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        
-        const complaintsSnapshot = await getDocs(collection(db, "complaints"));
-        setComplaintsCount(complaintsSnapshot.size);
-
+        const messagesReceived = query(
+          collection(db, "complaints"),
+          where("mode", "==", "sentByCustomer")
+        );
+        const messagesSnapshot = await getDocs(messagesReceived);
+        setMessagesCount(messagesSnapshot.size);
 
         if (currentUser && currentUser.email) {
           const staffQuery = query(
@@ -105,12 +110,7 @@ function Navbar() {
   };
 
   const handleLogout = async () => {
-    try {
-      dispatch({ type: "LOGOUT" });
-      navigate("/login");
-    } catch (error) {
-      console.error("Logout error:", error);
-    }
+    navigate("/login");
   };
 
   const handleOpenProfile = () => {
@@ -177,6 +177,30 @@ function Navbar() {
                 color="inherit"
               >
                 <MenuIcon />
+                <Tooltip title="Admin Picture">
+                  <Avatar
+                    alt={staffName || "User"}
+                    src={staffImage}
+                    sx={{ width: 27, height: 27, bgcolor: "#6439ff" }}
+                  >
+                    {(staffName || "U").charAt(0).toUpperCase()}
+                  </Avatar>
+                </Tooltip>
+                <Typography
+                  mr={2}
+                  textAlign="center"
+                  sx={{ fontWeight: "bold", fontSize: 12 }}
+                >
+                  Hello{" "}
+                  <span
+                    style={{
+                      marginLeft: "1px",
+                      textTransform: "capitalize",
+                    }}
+                  >
+                    {staffName}
+                  </span>
+                </Typography>
               </IconButton>
               <Menu
                 id="menu-appbar"
@@ -227,6 +251,15 @@ function Navbar() {
             >
               DRACE
             </Typography>
+            <Tooltip title="Admin Picture">
+              <Avatar
+                alt={staffName || "User"}
+                src={staffImage}
+                sx={{ width: 27, height: 27, bgcolor: "#6439ff" }}
+              >
+                {(staffName || "U").charAt(0).toUpperCase()}
+              </Avatar>
+            </Tooltip>
             <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}>
               <Box
                 sx={{
@@ -236,7 +269,23 @@ function Navbar() {
                   p: 1,
                   borderRadius: 2,
                 }}
-              ></Box>
+              >
+                <Typography
+                  mr={2}
+                  textAlign="center"
+                  sx={{ fontWeight: "bold", fontSize: 16 }}
+                >
+                  Welcome{" "}
+                  <span
+                    style={{
+                      marginLeft: "1px",
+                      textTransform: "capitalize",
+                    }}
+                  >
+                    {staffName}
+                  </span>
+                </Typography>
+              </Box>
             </Box>
 
             <Box sx={{ flexGrow: 0 }}>
@@ -246,7 +295,7 @@ function Navbar() {
                   sx={{ p: 0, mx: 1 }}
                   size="small"
                 >
-                  <TapasRounded />
+                  <FoodBankIcon />
                 </IconButton>
               </Tooltip>
               <Tooltip title="Staff Management">
@@ -258,26 +307,25 @@ function Navbar() {
                   <People />
                 </IconButton>
               </Tooltip>
-              <Tooltip title="Complaints">
+              <Tooltip title="Messages">
                 <IconButton
                   onClick={handleOpenComplaints}
                   sx={{ p: 0, mx: 1 }}
                   size="small"
                 >
-                  <Badge badgeContent={complaintsCount} color="primary">
-                    <SickRounded />
+                  <Badge badgeContent={messagesCount} color="primary">
+                    <TextsmsIcon />
                   </Badge>
                 </IconButton>
               </Tooltip>
               <Tooltip title="Account settings">
                 <IconButton onClick={handleOpenUserMenu} sx={{ p: 0, mx: 1 }}>
-                  <Avatar
+                  <ManageAccountsIcon
                     alt={staffName || "User"}
-                    src={staffImage}
-                    sx={{ width: 27, height: 27, bgcolor: "#6439ff" }}
+                    sx={{ width: 27, height: 27 }}
                   >
                     {(staffName || "U").charAt(0).toUpperCase()}
-                  </Avatar>
+                  </ManageAccountsIcon>
                 </IconButton>
               </Tooltip>
               <Menu

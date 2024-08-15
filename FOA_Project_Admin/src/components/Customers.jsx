@@ -12,18 +12,24 @@ import {
   Paper,
   Avatar,
   Box,
+  TablePagination,
 } from "@mui/material";
-import InfoIcon from "@mui/icons-material/Info";
+
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 import * as XLSX from "xlsx";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../helpers/firebase";
+import { Person } from "@mui/icons-material";
 
 const Customers = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [customers, setCustomers] = useState([]);
   const open = Boolean(anchorEl);
+  const [showAllCustomers, setShowAllcustomers] = useState(false);
+  const handleShowAllCustomers = () => {
+    setShowAllcustomers(!showAllCustomers);
+  };
 
   useEffect(() => {
     fetchCustomers();
@@ -55,9 +61,9 @@ const Customers = () => {
     const workBook = XLSX.utils.book_new();
     const workSheet = XLSX.utils.json_to_sheet(
       customers.map((customer) => ({
-        Name: customer.name,
+        Name: `${customer.firstName} ${customer.lastName}`,
         Address: customer.address,
-        Phone: customer.phone,
+        Phone: customer.contact,
         Location: customer.location,
         Status: customer.status,
       }))
@@ -71,12 +77,11 @@ const Customers = () => {
     const doc = new jsPDF();
     doc.text("All Customers", 20, 10);
     doc.autoTable({
-      head: [["Name", "Address", "Phone", "Location", "Status"]],
+      head: [["Name", "Address", "Phone", "Status"]],
       body: customers.map((customer) => [
         customer.name,
         customer.address,
-        customer.phone,
-        customer.location,
+        customer.contact,
         customer.status,
       ]),
     });
@@ -89,59 +94,58 @@ const Customers = () => {
 
   return (
     <Box my={5}>
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={handleClick}
-        startIcon={<InfoIcon />}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
       >
-        PRINT CUSTOMERS
-      </Button>
-      <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
-        <MenuItem onClick={handleExportPDF}>PDF</MenuItem>
-        <MenuItem onClick={handleExportExcel}>Excel</MenuItem>
-      </Menu>
-
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Image</TableCell>
-              <TableCell>Name</TableCell>
-              <TableCell>Address</TableCell>
-              <TableCell>Phone</TableCell>
-              <TableCell>Location</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell>Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {customers.map((customer) => (
-              <TableRow key={customer.id}>
-                <TableCell>
-                  <Avatar src={customer.image} alt={customer.name} />
-                </TableCell>
-                <TableCell>{customer.name}</TableCell>
-                <TableCell>{customer.address}</TableCell>
-                <TableCell>{customer.phone}</TableCell>
-                <TableCell>{customer.location}</TableCell>
-                <TableCell>{customer.status ? "Active" : "InActive"}</TableCell>
-                <TableCell>
-                  <Button
-                    variant="contained"
-                    color={
-                      customer.status === "active" ? "secondary" : "primary"
-                    }
-                    onClick={() => toggleStatus(customer.id)}
-                  >
-                    {customer.status === "active" ? "Deactivate" : "Activate"}
-                  </Button>
-                </TableCell>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleClick}
+          startIcon={<Person />}
+        >
+          PRINT CUSTOMERS
+        </Button>
+        <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
+          <MenuItem onClick={handleExportPDF}>PDF</MenuItem>
+          <MenuItem onClick={handleExportExcel}>Excel</MenuItem>
+        </Menu>
+        <Button variant="contained" onClick={handleShowAllCustomers}>
+          {showAllCustomers ? "Hide Customers" : "Show Customers"}
+        </Button>
+      </div>
+      <>
+      {showAllCustomers? (<> <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell sx={{ fontWeight: "bold" }}>Image</TableCell>
+                <TableCell sx={{ fontWeight: "bold" }}>Name</TableCell>
+                <TableCell sx={{ fontWeight: "bold" }}>Address</TableCell>
+                <TableCell sx={{ fontWeight: "bold" }}>Phone</TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+            </TableHead>
+            <TableBody>
+              {customers.map((customer) => (
+                <TableRow key={customer.id}>
+                  <TableCell>
+                    <Avatar src={customer.imageUrl} alt={customer.name} />
+                  </TableCell>
+                  <TableCell>
+                    {customer.firstName} {customer.lastName}
+                  </TableCell>
+                  <TableCell>{customer.address}</TableCell>
+                  <TableCell>{customer.contact}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>{" "}</>):("")}
+        
+      </>
     </Box>
   );
 };

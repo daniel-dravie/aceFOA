@@ -24,6 +24,7 @@ import {
   Checkbox,
   ListItemText,
 } from "@mui/material";
+import PlaylistAddTwoToneIcon from "@mui/icons-material/PlaylistAddTwoTone";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddFood from "../mod/AddFood";
@@ -91,6 +92,20 @@ const EditFoodDialog = ({ open, onClose, food, onSave }) => {
             setEditedFood({
               ...editedFood,
               categories: e.target.value.split(", "),
+            })
+          }
+        />
+        <TextField
+          fullWidth
+          margin="normal"
+          label="Description"
+          multiline
+          rows={4}
+          value={editedFood.description || ""}
+          onChange={(e) =>
+            setEditedFood({
+              ...editedFood,
+              description: e.target.value,
             })
           }
         />
@@ -378,6 +393,8 @@ const Food = () => {
           variant="contained"
           onClick={() => handleAdd(title.toLowerCase())}
         >
+          <PlaylistAddTwoToneIcon />
+
           {addButtonText}
         </Button>
       </Box>

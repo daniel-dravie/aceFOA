@@ -1,54 +1,62 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
-  BarChart,
-  Bar,
+  AreaChart,
+  Area,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer,
-  AreaChart,
-  Area,
 } from "recharts";
-import { Typography } from "@mui/material";
+import { Typography, Box } from "@mui/material";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "../helpers/firebase";
 
 const MostPurchased = () => {
-  const [data] = useState([
-    { name: "Pizza", count: 120 },
-    { name: "Burger", count: 90 },
-    { name: "Soda", count: 80 },
-    { name: "Pasta", count: 70 },
-    { name: "Salad", count: 60 },
-  ]);
+  const [data, setData] = useState([]);
+
+  useEffect(() => {
+    const fetchMostPurchasedFoods = async () => {
+      try {
+        const ordersRef = collection(db, "orders");
+        const querySnapshot = await getDocs(ordersRef);
+
+        const foodCounts = {};
+        querySnapshot.forEach((doc) => {
+          const orderData = doc.data();
+          orderData.orders.forEach((order) => {
+            if (foodCounts[order.foodId]) {
+              foodCounts[order.foodId].count += order.quantity;
+            } else {
+              foodCounts[order.foodId] = {
+                name: order.foodName,
+                count: order.quantity,
+              };
+            }
+          });
+        });
+
+        const sortedFoods = Object.values(foodCounts)
+          .sort((a, b) => b.count - a.count)
+          .slice(0, 5);  // Get top 5 most purchased foods
+
+        setData(sortedFoods);
+      } catch (error) {
+        console.error("Error fetching most purchased foods:", error);
+      }
+    };
+
+    fetchMostPurchasedFoods();
+  }, []);
 
   return (
-    <div>
-      <Typography sx={{ fontWeight: "bold", color: "#333" }}>
-        MOST PURCHASED
+    <Box sx={{ mt: 4 }}>
+      <Typography variant="h6" sx={{ fontWeight: "bold", color: "#333", mb: 2 }}>
+        MOST PURCHASED FOOD:
       </Typography>
-      <ResponsiveContainer width="100%" height={400}>
-        {/* Uncomment this block if you prefer BarChart */}
-        {/* <BarChart
-          data={data}
-          margin={{
-            top: 20,
-            right: 30,
-            left: 20,
-            bottom: 5,
-          }}
-        >
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="name" />
-          <YAxis />
-          <Tooltip />
-          <Legend />
-          <Bar dataKey="count" fill="#8884d8" />
-        </BarChart> */}
 
+      <ResponsiveContainer width="100%" height={400}>
         <AreaChart
-          width={730}
-          height={250}
           data={data}
           margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
         >
@@ -56,10 +64,6 @@ const MostPurchased = () => {
             <linearGradient id="colorUv" x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor="#8884d8" stopOpacity={0.8} />
               <stop offset="95%" stopColor="#8884d8" stopOpacity={0} />
-            </linearGradient>
-            <linearGradient id="colorPv" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#82ca9d" stopOpacity={0.8} />
-              <stop offset="95%" stopColor="#82ca9d" stopOpacity={0} />
             </linearGradient>
           </defs>
           <XAxis dataKey="name" />
@@ -75,7 +79,7 @@ const MostPurchased = () => {
           />
         </AreaChart>
       </ResponsiveContainer>
-    </div>
+    </Box>
   );
 };
 

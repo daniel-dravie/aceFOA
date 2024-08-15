@@ -105,7 +105,6 @@ const Widget = ({ title }) => {
     case "CUSTOMERS":
       data = {
         icon: <PersonOutlinedIcon />,
-        link: "See all customers",
         bgColor: "#e3f2fd",
         to: `/dashboard/${adminID}/customers`,
       };
@@ -113,7 +112,6 @@ const Widget = ({ title }) => {
     case "TOTAL REVENUE":
       data = {
         icon: <MonetizationOnOutlinedIcon />,
-        link: "View revenue details",
         bgColor: "#e8f5e9",
         to: "/revenue",
       };
@@ -121,7 +119,6 @@ const Widget = ({ title }) => {
     case "ORDERS":
       data = {
         icon: <ShoppingCartOutlinedIcon />,
-        link: "View all orders",
         bgColor: "#fff3e0",
         to: `/dashboard/${adminID}`,
       };
