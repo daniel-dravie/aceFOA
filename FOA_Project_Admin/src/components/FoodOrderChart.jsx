@@ -59,7 +59,7 @@ const OrderAnalysisChart = () => {
   return (
     <Box sx={{ mt: 4 }}>
       <Typography variant="h6" sx={{ fontWeight: "bold", color: "#333", mb: 2 }}>
-        MOST PURCHASED FOOD:
+        FOOD DELIVERY VS PICKUP:
       </Typography>
 
       <ResponsiveContainer width="100%" height={400}>
