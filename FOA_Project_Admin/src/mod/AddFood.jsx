@@ -32,6 +32,7 @@ const AddFood = ({ open, onClose, onFoodAdded }) => {
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
   const [ratings, setRatings] = useState("");
+  const [description, setDescription] = useState(""); // New state for description
   const [categories, setCategories] = useState([]);
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -86,6 +87,7 @@ const AddFood = ({ open, onClose, onFoodAdded }) => {
       !name ||
       !price ||
       !ratings ||
+      !description || // Check for description
       selectedCategories.length === 0 ||
       !imageFile
     ) {
@@ -112,6 +114,7 @@ const AddFood = ({ open, onClose, onFoodAdded }) => {
         name,
         price: parseFloat(price),
         ratings: parseFloat(ratings),
+        description, // Include description
         categories: selectedCategories,
         image: imageUrl,
         createdAt: serverTimestamp(),
@@ -145,6 +148,7 @@ const AddFood = ({ open, onClose, onFoodAdded }) => {
     setName("");
     setPrice("");
     setRatings("");
+    setDescription(""); // Reset description
     setSelectedCategories([]);
   };
 
@@ -215,6 +219,16 @@ const AddFood = ({ open, onClose, onFoodAdded }) => {
             inputProps={{ min: 0, max: 5, step: 0.1 }}
             value={ratings}
             onChange={(e) => setRatings(e.target.value)}
+          />
+          <TextField
+            label="Description"
+            variant="outlined"
+            fullWidth
+            margin="normal"
+            multiline
+            rows={4} // Adjust the number of rows for better display
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
           />
           <Box sx={{ mt: 2 }}>
             <p>Categories:</p>
