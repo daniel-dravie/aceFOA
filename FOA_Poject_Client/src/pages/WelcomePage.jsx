@@ -46,7 +46,7 @@ const WelcomePage = () => {
             }}
           >
             <Typography variant={"h3"} sx={{ fontWeight: "bold", mb: 3 }}>
-              Order delivery near you
+              AceDanny Food Delivery Services
             </Typography>
             <Button
               variant="contained"
@@ -56,7 +56,7 @@ const WelcomePage = () => {
               sx={{ mt: 2 }}
               to="/login"
             >
-              SIGNIN
+              Login
             </Button>
           </Box>
         </m.div>

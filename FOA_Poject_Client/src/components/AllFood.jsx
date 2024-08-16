@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { Box, Grid, TextField, Container, Typography } from "@mui/material";
+import { Box, Grid, TextField, Container, Typography, InputAdornment, } from "@mui/material";
 import FoodCard from "./FoodCard";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../helpers/firebase";
-
+import {  Search } from "@mui/icons-material";
 const AllFood = () => {
   const [foods, setFoods] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
 
-  useEffect(() => {
+  useEffect(() => { 
     const fetchFoods = async () => {
       const foodsCollection = collection(db, "foods");
       const foodSnapshot = await getDocs(foodsCollection);
@@ -34,11 +34,20 @@ const AllFood = () => {
         </Typography>
         <TextField
           fullWidth
+           placeholder="Search foods..."
           label="Search foods"
           variant="outlined"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           sx={{ mb: 4 }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <Search />
+              </InputAdornment>
+            ),
+          }}
+          
         />
         <Grid container spacing={3}>
           {filteredFoods.map((food) => (

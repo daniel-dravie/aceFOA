@@ -47,7 +47,7 @@ const Complains = () => {
   useEffect(() => {
     fetchStaff();
     fetchComplaints();
-    console.log(currentUser)
+    console.log(currentUser);
   }, []);
 
   const fetchStaff = async () => {
@@ -62,7 +62,7 @@ const Complains = () => {
   };
 
   const fetchComplaints = async () => {
-    const complaintsRef = collection(db, "complaints" );
+    const complaintsRef = collection(db, "complaints");
     const sentQuery = query(
       complaintsRef,
       where("mode", "==", "sentByCustomer")
@@ -185,14 +185,33 @@ const Complains = () => {
       </Tabs>
 
       {tabValue === 1 && (
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={handleOpenDialog}
-          sx={{ mb: 3 }}
+        <>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleOpenDialog}
+            sx={{ mb: 3 }}
+          >
+            New Message
+          </Button>
+          <Typography
+            variant="h6"
+            gutterBottom
+            sx={{ fontWeight: "bold", color: "#1b32bb" }}
+          >
+            Messages sent
+          </Typography>
+        </>
+      )}
+
+      {tabValue === 0 && (
+        <Typography
+          variant="h6"
+          gutterBottom
+          sx={{ fontWeight: "bold", color: "#275a04" }}
         >
-          New Message
-        </Button>
+          Messages Received
+        </Typography>
       )}
 
       <List>
