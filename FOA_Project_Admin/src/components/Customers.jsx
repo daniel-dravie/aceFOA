@@ -12,7 +12,7 @@ import {
   Paper,
   Avatar,
   Box,
-  TablePagination,
+  TextField, InputAdornment,
 } from "@mui/material";
 
 import jsPDF from "jspdf";
@@ -20,12 +20,14 @@ import "jspdf-autotable";
 import * as XLSX from "xlsx";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../helpers/firebase";
-import { Person } from "@mui/icons-material";
+import { Person, Search } from "@mui/icons-material";
 
 const Customers = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [customers, setCustomers] = useState([]);
+ 
   const open = Boolean(anchorEl);
+  const [searchCustomer, setSearchCustomer] = useState("");
   const [showAllCustomers, setShowAllcustomers] = useState(false);
   const handleShowAllCustomers = () => {
     setShowAllcustomers(!showAllCustomers);
@@ -52,6 +54,10 @@ const Customers = () => {
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
   };
+
+  const filteredCustomer = customers.filter((customer) =>
+    customer.firstName.toLowerCase().includes(searchCustomer.toLowerCase())
+  );
 
   const handleClose = () => {
     setAnchorEl(null);
@@ -117,8 +123,26 @@ const Customers = () => {
           {showAllCustomers ? "Hide Customers" : "Show Customers"}
         </Button>
       </div>
+      
       <>
-      {showAllCustomers? (<> <TableContainer component={Paper}>
+      {showAllCustomers? (<> 
+        <TextField
+          fullWidth
+          placeholder="Search Customer..."
+          label="Search Customer"
+          variant="outlined"
+          value={searchCustomer}
+          onChange={(e) => setSearchCustomer(e.target.value)}
+          sx={{ mt: 2 }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <Search />
+              </InputAdornment>
+            ),
+          }}
+        />
+      <TableContainer component={Paper}>
           <Table>
             <TableHead>
               <TableRow>
@@ -129,7 +153,7 @@ const Customers = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {customers.map((customer) => (
+              {filteredCustomer.map((customer) => (
                 <TableRow key={customer.id}>
                   <TableCell>
                     <Avatar src={customer.imageUrl} alt={customer.name} />

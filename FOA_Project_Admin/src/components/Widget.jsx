@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Component } from "react";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
@@ -7,7 +7,7 @@ import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
 import MonetizationOnOutlinedIcon from "@mui/icons-material/MonetizationOnOutlined";
 import "../styles/widget.css";
 import { Link, useParams } from "react-router-dom";
-import { db } from "../helpers/firebase"; 
+import { db } from "../helpers/firebase";
 import {
   collection,
   query,
@@ -113,7 +113,9 @@ const Widget = ({ title }) => {
       data = {
         icon: <MonetizationOnOutlinedIcon />,
         bgColor: "#e8f5e9",
-        to: "/revenue",
+        to: "revenue",
+        link: "View Revenue Details",
+        
       };
       break;
     case "ORDERS":

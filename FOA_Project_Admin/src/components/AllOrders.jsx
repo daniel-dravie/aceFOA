@@ -13,6 +13,7 @@ import {
   Menu,
   MenuItem,
   Container,
+  TextField, InputAdornment,
 } from "@mui/material";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import InfoIcon from "@mui/icons-material/Info";
@@ -21,12 +22,13 @@ import "jspdf-autotable";
 import * as XLSX from "xlsx";
 import { collection, getDocs, getDoc, doc } from "firebase/firestore";
 import { db } from "../helpers/firebase";
-
+import {  Search } from "@mui/icons-material";
 const AllOrders = () => {
   const [orderz, setOrderz] = useState([]);
+  const [searchOrder, setSearchOrder] = useState("");
   const [customers, setCustomers] = useState([]);
   const [showAllOrders, setShowAllOrders] = useState(false);
-
+  
   const fetctOrderz = async () => {
     try {
       const orderCollection = collection(db, "orders");
@@ -35,6 +37,8 @@ const AllOrders = () => {
         id: doc.id,
         ...doc.data(),
       }));
+
+      
 
       console.log("orders", orderList);
 
@@ -71,6 +75,10 @@ const AllOrders = () => {
   useEffect(() => {
     fetctOrderz();
   }, []);
+
+  const filteredFoods = orderz.filter((order) =>
+    order.orderType.toLowerCase().includes(searchOrder.toLowerCase())
+  );
 
   const fetchCustomers = async () => {
     try {
@@ -249,9 +257,26 @@ const AllOrders = () => {
           {showAllOrders ? "Hide Orders" : "Show Orders"}
         </Button>
       </div>
+      
 
       {showAllOrders ? (
         <>
+        <TextField
+          fullWidth
+          placeholder="Search Food Order..."
+          label="Search Food Order"
+          variant="outlined"
+          value={searchOrder}
+          onChange={(e) => setSearchOrder(e.target.value)}
+          sx={{ }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <Search />
+              </InputAdornment>
+            ),
+          }}
+        />
           <TableContainer component={Paper}>
             <Table>
               <TableHead>
@@ -268,7 +293,7 @@ const AllOrders = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {orderz.map((order) => (
+                {filteredFoods.map((order) => (
                   <TableRow key={order.id}>
                     <TableCell>{formatDate(order.orderTime)}</TableCell>
                     <TableCell>{order.orderType}</TableCell>

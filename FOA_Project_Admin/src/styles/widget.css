@@ -8,6 +8,7 @@
     box-shadow: 2px 4px 10px 1px rgba(201, 201, 201, 0.47);
     border-radius: 10px;
     height: 100px;
+    
 }
 
 .widget .left,
@@ -20,7 +21,7 @@
 .widget .title {
     font-weight: bold;
     font-size: 14px;
-    color: rgb(160, 160, 160);
+    color: #5d5555;
 }
 
 .widget .counter {
