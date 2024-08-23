@@ -45,7 +45,6 @@ const Complains = () => {
   useEffect(() => {
     fetchCustomers();
     fetchComplaints();
-    console.log(messages);
   }, []);
 
   const fetchCustomers = async () => {
@@ -60,7 +59,7 @@ const Complains = () => {
   };
 
   const fetchComplaints = async () => {
-    const complaintsRef = collection(db, "complaints");
+    const complaintsRef = collection(db, "tempComplaints");
     const sentQuery = query(complaintsRef, where("mode", "==", "sentByAdmin"));
     const receivedQuery = query(
       complaintsRef,
@@ -88,8 +87,6 @@ const Complains = () => {
       sent: sentComplaints,
       received: receivedComplaints,
     });
-
-    console.log(messages.sent);
   };
 
   useEffect(() => {

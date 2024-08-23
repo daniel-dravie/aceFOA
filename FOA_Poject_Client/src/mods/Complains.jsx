@@ -62,7 +62,7 @@ const Complains = () => {
   };
 
   const fetchComplaints = async () => {
-    const complaintsRef = collection(db, "complaints");
+    const complaintsRef = collection(db, "tempComplaints");
     const sentQuery = query(
       complaintsRef,
       where("mode", "==", "sentByCustomer")
@@ -80,13 +80,13 @@ const Complains = () => {
     const sentComplaints = sentSnapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
-      date: doc.data().date.toDate().toISOString().split("T")[0],
+      date: new Date(doc.data().date.toDate().toISOString().split("T")[0]),
     }));
 
     const receivedComplaints = receivedSnapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
-      date: doc.data().date.toDate().toISOString().split("T")[0],
+      date: new Date(doc.data().date.toDate().toISOString().split("T")[0]),
     }));
 
     setMessages({
@@ -142,7 +142,7 @@ const Complains = () => {
   const handleSubmit = async () => {
     if (newMessage.subject && newMessage.content) {
       try {
-        const complaintsRef = collection(db, "complaints");
+        const complaintsRef = collection(db, "tempComplaints");
 
         const newComplaint = {
           subject: newMessage.subject,

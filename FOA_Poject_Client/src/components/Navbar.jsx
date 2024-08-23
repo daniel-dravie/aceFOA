@@ -51,7 +51,7 @@ const Navbar = () => {
     const fetchData = async () => {
       try {
         const messagesQuery = query(
-          collection(db, "complaints"),
+          collection(db, "tempComplaints"),
           where("mode", "==", "sentByAdmin")
         );
         const messagesSnapshot = await getDocs(messagesQuery);

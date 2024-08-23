@@ -1,7 +1,15 @@
 import React, { useState, useContext, useEffect } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { db } from "../helpers/firebase";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  query,
+  where,
+  addDoc,
+  deleteDoc,
+  doc,
+} from "firebase/firestore";
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import Toolbar from "@mui/material/Toolbar";
@@ -38,12 +46,16 @@ function Navbar() {
   const [messagesCount, setMessagesCount] = useState(0);
   const { currentUser } = useContext(AuthContext);
   const navigate = useNavigate();
+  const [messages, setMessages] = useState({
+    received: [],
+    sent: [],
+  });
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const messagesReceived = query(
-          collection(db, "complaints"),
+          collection(db, "tempComplaints"),
           where("mode", "==", "sentByCustomer")
         );
         const messagesSnapshot = await getDocs(messagesReceived);
@@ -78,19 +90,8 @@ function Navbar() {
   };
 
   const handleOpenComplaints = () => {
+    fetchComplaints();
     navigate("/admin/complains");
-  };
-
-  const handleOpenAddDeliveryGuy = () => {
-    setOpenAddDeliveryGuy(true);
-  };
-
-  const handleOpenAddFood = () => {
-    setOpenAddFood(true);
-  };
-
-  const handleOpenAddFoodCategory = () => {
-    setOpenAddFoodCategory(true);
   };
 
   const handleOpenNavMenu = (event) => {
@@ -129,6 +130,48 @@ function Navbar() {
       handleOpenProfile();
     }
     handleCloseUserMenu();
+  };
+
+  const fetchComplaints = async () => {
+    const complaintsRef = collection(db, "tempComplaints");
+    const sentQuery = query(complaintsRef, where("mode", "==", "sentByAdmin"));
+    const receivedQuery = query(
+      complaintsRef,
+      where("mode", "==", "sentByCustomer")
+    );
+
+    const [sentSnapshot, receivedSnapshot] = await Promise.all([
+      getDocs(sentQuery),
+      getDocs(receivedQuery),
+    ]);
+
+    const sentComplaints = sentSnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+      date: doc.data().date.toDate().toISOString().split("T")[0],
+    }));
+
+    const receivedComplaints = receivedSnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+      date: doc.data().date.toDate().toISOString().split("T")[0],
+    }));
+
+    setMessages({
+      sent: sentComplaints,
+      received: receivedComplaints,
+    });
+    const data = messages.received;
+
+    for (const message of data) {
+      try {
+        console.log(message);
+        await addDoc(collection(db, "complaints"), message);
+        await deleteDoc(doc(db, "tempComplaints", message.id));
+      } catch (err) {
+        console.log("error".err);
+      }
+    }
   };
 
   return (
