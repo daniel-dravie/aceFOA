@@ -2,20 +2,19 @@ import React, { useState } from "react";
 import { Box, Grid, Typography, Rating, IconButton } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import AddIcon from "@mui/icons-material/Add";
-import FoodDialog from "../mods/FoodDialog"; 
+import FoodDialog from "../mods/FoodDialog";
 
 const ImageWrapper = styled("div")({
   width: "100%",
   height: "200px",
   overflow: "hidden",
-  position: "relative", 
+  position: "relative",
   borderRadius: 10,
 });
 
 const StyledImage = styled("img")({
   width: "100%",
   height: "auto",
-  height: "100%",
 });
 
 const AddButton = styled(IconButton)({
@@ -31,7 +30,7 @@ const AddButton = styled(IconButton)({
   },
 });
 
-const FoodCard = ({ id, imageSrc, name, rating, price, description}) => {
+const FoodCard = ({ id, imageSrc, name, rating, price, description }) => {
   const [open, setOpen] = useState(false);
 
   const handleClickOpen = () => {
@@ -86,7 +85,7 @@ const FoodCard = ({ id, imageSrc, name, rating, price, description}) => {
         name={name}
         rating={rating}
         price={price}
-        imageSrc={imageSrc} 
+        imageSrc={imageSrc}
         description={description}
         id={id}
       />

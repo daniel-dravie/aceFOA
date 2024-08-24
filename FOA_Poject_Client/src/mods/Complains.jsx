@@ -1,3 +1,4 @@
+// customer complaints
 import React, { useState, useEffect, useContext } from "react";
 import {
   Box,
@@ -24,6 +25,8 @@ import {
   getDocs,
   query,
   where,
+  writeBatch,
+  doc,
 } from "firebase/firestore";
 import { AuthContext } from "../context/AuthContext";
 
@@ -46,9 +49,9 @@ const Complains = () => {
 
   useEffect(() => {
     fetchStaff();
-    fetchComplaints();
+    fetchComplaints(currentUser.email);
     console.log(currentUser);
-  }, []);
+  }, [currentUser]);
 
   const fetchStaff = async () => {
     const staffCollection = collection(db, "staff");
@@ -62,14 +65,17 @@ const Complains = () => {
   };
 
   const fetchComplaints = async () => {
+    const userEmail = currentUser.email;
     const complaintsRef = collection(db, "tempComplaints");
     const sentQuery = query(
       complaintsRef,
-      where("mode", "==", "sentByCustomer")
+      where("mode", "==", "sentByCustomer"),
+      where("email", "==", userEmail)
     );
     const receivedQuery = query(
       complaintsRef,
-      where("mode", "==", "sentByAdmin")
+      where("mode", "==", "sentByAdmin"),
+      where("recipients", "array-contains", userEmail)
     );
 
     const [sentSnapshot, receivedSnapshot] = await Promise.all([
@@ -87,6 +93,7 @@ const Complains = () => {
       id: doc.id,
       ...doc.data(),
       date: new Date(doc.data().date.toDate().toISOString().split("T")[0]),
+      isRead: doc.data().isRead || false,
     }));
 
     setMessages({
@@ -94,8 +101,19 @@ const Complains = () => {
       received: receivedComplaints,
     });
 
-    console.log(messages.sent);
-    console.log(messages.received);
+    // Update isRead status for newly fetched messages
+    updateReadStatus(receivedComplaints);
+  };
+
+  const updateReadStatus = async (complaints) => {
+    const batch = writeBatch(db);
+    complaints.forEach((complaint) => {
+      if (!complaint.isRead) {
+        const complaintRef = doc(db, "tempComplaints", complaint.id);
+        batch.update(complaintRef, { isRead: true });
+      }
+    });
+    await batch.commit();
   };
 
   useEffect(() => {
@@ -115,28 +133,9 @@ const Complains = () => {
     setSelectedStaffs([]);
   };
 
-  const handleOpenStaffDialog = () => setOpenStaffsDialog(true);
-  const handleCloseStaffDialog = () => setOpenStaffsDialog(false);
-
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNewMessage({ ...newMessage, [name]: value });
-  };
-
-  const handleCustomerSelect = (staffID) => {
-    setSelectedStaffs((prev) =>
-      prev.includes(staffID)
-        ? prev.filter((id) => id !== staffID)
-        : [...prev, staffID]
-    );
-  };
-
-  const handleSelectAllCustomers = (event) => {
-    if (event.target.checked) {
-      setSelectedStaffs(filteredStaffs.map((staff) => staff.id));
-    } else {
-      setSelectedStaffs([]);
-    }
   };
 
   const handleSubmit = async () => {
@@ -150,6 +149,7 @@ const Complains = () => {
           date: serverTimestamp(),
           mode: "sentByCustomer",
           email: currentUser.email,
+          isRead: false, // Add this line
         };
 
         const docRef = await addDoc(complaintsRef, newComplaint);
@@ -216,7 +216,26 @@ const Complains = () => {
 
       <List>
         {messages[tabValue === 0 ? "received" : "sent"].map((message) => (
-          <ListItem key={message.id} divider>
+          <ListItem
+            key={message.id}
+            divider
+            sx={{
+              backgroundColor:
+                tabValue === 0 && !message.isRead ? "#e3f2fd" : "inherit",
+            }}
+          >
+            {tabValue === 0 && !message.isRead && (
+              <Box
+                component="span"
+                sx={{
+                  width: 10,
+                  height: 10,
+                  borderRadius: "50%",
+                  backgroundColor: "primary.main",
+                  marginRight: 2,
+                }}
+              />
+            )}
             <ListItemText
               primary={message.subject}
               secondary={
@@ -228,7 +247,7 @@ const Complains = () => {
                   >
                     {message.content}
                   </Typography>
-                  {` — ${message.date}`}
+                  {` — ${message.date.toISOString().split("T")[0]}`}
                 </>
               }
             />

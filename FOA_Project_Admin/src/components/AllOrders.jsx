@@ -13,22 +13,31 @@ import {
   Menu,
   MenuItem,
   Container,
-  TextField, InputAdornment,
+  TextField,
+  InputAdornment,
 } from "@mui/material";
+import Switch from "@mui/material/Switch";
+import FormControlLabel from "@mui/material/FormControlLabel";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import InfoIcon from "@mui/icons-material/Info";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 import * as XLSX from "xlsx";
-import { collection, getDocs, getDoc, doc } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  getDoc,
+  doc,
+  updateDoc,
+} from "firebase/firestore";
 import { db } from "../helpers/firebase";
-import {  Search } from "@mui/icons-material";
+import { Search } from "@mui/icons-material";
 const AllOrders = () => {
   const [orderz, setOrderz] = useState([]);
   const [searchOrder, setSearchOrder] = useState("");
   const [customers, setCustomers] = useState([]);
   const [showAllOrders, setShowAllOrders] = useState(false);
-  
+
   const fetctOrderz = async () => {
     try {
       const orderCollection = collection(db, "orders");
@@ -36,9 +45,8 @@ const AllOrders = () => {
       const orderList = orderSnapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
+        status: doc.data().status || "pending", // Set default status if not present
       }));
-
-      
 
       console.log("orders", orderList);
 
@@ -75,6 +83,24 @@ const AllOrders = () => {
   useEffect(() => {
     fetctOrderz();
   }, []);
+
+  const handleStatusChange = async (orderId, newStatus) => {
+    try {
+      const orderRef = doc(db, "orders", orderId);
+      await updateDoc(orderRef, { status: newStatus ? "received" : "pending" });
+
+      // Update the local state
+      setOrderz(
+        orderz.map((order) =>
+          order.id === orderId
+            ? { ...order, status: newStatus ? "received" : "pending" }
+            : order
+        )
+      );
+    } catch (error) {
+      console.error("Error updating order status:", error);
+    }
+  };
 
   const filteredFoods = orderz.filter((order) =>
     order.orderType.toLowerCase().includes(searchOrder.toLowerCase())
@@ -253,30 +279,29 @@ const AllOrders = () => {
             </Button>
           </MenuItem>
         </Menu>
-        <Button variant="contained" onClick={handleShowAllOrders} >
+        <Button variant="contained" onClick={handleShowAllOrders}>
           {showAllOrders ? "Hide Orders" : "Show Orders"}
         </Button>
       </div>
-      
 
       {showAllOrders ? (
         <>
-        <TextField
-          fullWidth
-          placeholder="Search Food Order..."
-          label="Search Food Order"
-          variant="outlined"
-          value={searchOrder}
-          onChange={(e) => setSearchOrder(e.target.value)}
-          sx={{ }}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <Search />
-              </InputAdornment>
-            ),
-          }}
-        />
+          <TextField
+            fullWidth
+            placeholder="Search Food Order..."
+            label="Search Food Order"
+            variant="outlined"
+            value={searchOrder}
+            onChange={(e) => setSearchOrder(e.target.value)}
+            sx={{}}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Search />
+                </InputAdornment>
+              ),
+            }}
+          />
           <TableContainer component={Paper}>
             <Table>
               <TableHead>
@@ -289,6 +314,7 @@ const AllOrders = () => {
                   <TableCell sx={{ fontWeight: "bold" }}>
                     Customer Name
                   </TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>Status</TableCell>
                   <TableCell sx={{ fontWeight: "bold" }}>Details</TableCell>
                 </TableRow>
               </TableHead>
@@ -302,6 +328,22 @@ const AllOrders = () => {
                     </TableCell>
                     <TableCell>
                       {customers[order.clientId] || "Unknown"}
+                    </TableCell>
+                    <TableCell>
+                      <FormControlLabel
+                        control={
+                          <Switch
+                            checked={order.status === "received"}
+                            onChange={(e) =>
+                              handleStatusChange(order.id, e.target.checked)
+                            }
+                            color="primary"
+                          />
+                        }
+                        label={
+                          order.status === "received" ? "Received" : "Pending"
+                        }
+                      />
                     </TableCell>
                     <TableCell>
                       <Tooltip

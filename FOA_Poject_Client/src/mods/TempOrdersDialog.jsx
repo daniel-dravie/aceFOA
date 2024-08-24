@@ -36,7 +36,8 @@ import {
   addDoc,
   writeBatch,
   doc,
-  getDoc,deleteDoc
+  getDoc,
+  deleteDoc,
 } from "firebase/firestore";
 import { AuthContext } from "../context/AuthContext";
 
@@ -270,6 +271,7 @@ const TempOrdersDialog = ({ open, onClose, onRemoveOrder }) => {
             orderType: "delivery",
             orderTime,
             deliveryGuy: await fetchRandomDeliveryGuy(selectedLocation.id),
+            status: "pending",
           }
         : {
             orders: tempOrders.map((order, index) => ({
@@ -283,6 +285,7 @@ const TempOrdersDialog = ({ open, onClose, onRemoveOrder }) => {
             orderType: "pickup",
             token: generateToken(8),
             claimed: false,
+            status: "pending",
           };
 
     const payStack = new PaystackPop();

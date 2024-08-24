@@ -1,3 +1,4 @@
+// admin complaints
 import React, { useState, useEffect } from "react";
 import {
   Box,
@@ -24,6 +25,8 @@ import {
   getDocs,
   query,
   where,
+  writeBatch,
+  doc,
 } from "firebase/firestore";
 
 const Complains = () => {
@@ -81,12 +84,27 @@ const Complains = () => {
       id: doc.id,
       ...doc.data(),
       date: doc.data().date.toDate().toISOString().split("T")[0],
+      isRead: doc.data().isRead || false,
     }));
 
     setMessages({
       sent: sentComplaints,
       received: receivedComplaints,
     });
+
+    // Update isRead status for newly fetched messages
+    updateReadStatus(receivedComplaints);
+  };
+
+  const updateReadStatus = async (complaints) => {
+    const batch = writeBatch(db);
+    complaints.forEach((complaint) => {
+      if (!complaint.isRead) {
+        const complaintRef = doc(db, "tempComplaints", complaint.id);
+        batch.update(complaintRef, { isRead: true });
+      }
+    });
+    await batch.commit();
   };
 
   useEffect(() => {
@@ -137,7 +155,7 @@ const Complains = () => {
       selectedCustomers.length > 0
     ) {
       try {
-        const complaintsRef = collection(db, "complaints");
+        const complaintsRef = collection(db, "tempComplaints");
         const newComplaint = {
           subject: newMessage.subject,
           content: newMessage.content,
@@ -214,7 +232,25 @@ const Complains = () => {
 
       <List>
         {messages[tabValue === 0 ? "received" : "sent"].map((message) => (
-          <ListItem key={message.id} divider>
+          <ListItem
+            key={message.id}
+            divider
+            sx={{
+              backgroundColor: message.isRead ? "inherit" : "#e3f2fd",
+            }}
+          >
+            {!message.isRead && (
+              <Box
+                component="span"
+                sx={{
+                  width: 10,
+                  height: 10,
+                  borderRadius: "50%",
+                  backgroundColor: "primary.main",
+                  marginRight: 2,
+                }}
+              />
+            )}
             <ListItemText
               primary={message.subject}
               secondary={
