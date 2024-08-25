@@ -270,7 +270,7 @@ const Complains = () => {
                     color="text.secondary"
                   >
                     {message.mode == "sentByCustomer"
-                      ? `By: ${message.email} `
+                      ? `From: ${message.email} `
                       : `To: ${message.recipients}`}
                   </Typography>
                 </>
