@@ -234,17 +234,18 @@ const Orders = () => {
                           Quantity: {orderItem.quantity}
                         </Typography>
                         {orderItem.toppings && (
+                          <>
                           <Box sx={{ marginTop: "0.5em" }}>
                             <Typography
                               variant="body2"
                               sx={{ fontWeight: "bold" }}
-                            >
+                              >
                               Toppings:
                             </Typography>
                             {orderItem.toppings.map((topping, toppingIndex) => (
                               <Box
-                                key={toppingIndex}
-                                sx={{ marginLeft: "1em" }}
+                              key={toppingIndex}
+                              sx={{ marginLeft: "1em" }}
                               >
                                 <Typography variant="body2">
                                   {topping.name} (Quantity: {topping.quantity})
@@ -252,6 +253,17 @@ const Orders = () => {
                               </Box>
                             ))}
                           </Box>
+                          <Box sx={{ marginTop: "0.5em" }}>
+                            <Typography
+                              variant="body2"
+                              sx={{ fontWeight: "bold" }}
+                              >
+                              Order Staus:
+                            </Typography>
+                            
+                          </Box>
+                          
+                        </>
                         )}
                       </Box>
                     ))}
