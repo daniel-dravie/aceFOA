@@ -75,7 +75,7 @@ const Revenue = () => {
           </TableRow>
           <TableRow>
             <TableCell colSpan={1} sx={{fontWeight: "bold"}}>Total</TableCell>
-            <TableCell align="center">{ccyFormat(invoiceTotal)}</TableCell>
+            <TableCell align="center" sx={{fontWeight: "bold"}}>{ccyFormat(invoiceTotal)}</TableCell>
           </TableRow>
         </TableBody>
       </Table>
