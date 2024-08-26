@@ -30,6 +30,7 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import Avatar from "@mui/material/Avatar";
 import FoodBankIcon from "@mui/icons-material/FoodBank";
 import Profile from "../mod/Profile";
+import AddLocationIcon from "@mui/icons-material/AddLocation";
 
 const settings = ["Profile", "Logout"];
 
@@ -83,6 +84,9 @@ function Navbar() {
 
   const handleOpenStaffManagement = () => {
     navigate("/admin/staff");
+  };
+  const handleOpenLocationManagement = () => {
+    navigate("/admin/location");
   };
 
   const handleOpenFoodManagement = () => {
@@ -348,6 +352,15 @@ function Navbar() {
                   size="small"
                 >
                   <People />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Location Management">
+                <IconButton
+                  onClick={handleOpenLocationManagement}
+                  sx={{ p: 0, mx: 1 }}
+                  size="small"
+                >
+                  <AddLocationIcon />
                 </IconButton>
               </Tooltip>
               <Tooltip title="Messages">

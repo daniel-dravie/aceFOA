@@ -11,7 +11,7 @@ import { AuthContext } from "./context/AuthContext";
 import Food from "./components/Food";
 import Complains from "./mod/Complains";
 import Revenue from "./components/Revenue";
-
+import Location from "./components/Location";
 
 const App = () => {
   const { currentUser } = useContext(AuthContext);
@@ -29,6 +29,7 @@ const App = () => {
           <Route path="admin" element={<RootLayout />}>
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="staff" element={<Staff />} />
+            <Route path="location" element={<Location/>}/>
             <Route path="food" element={<Food />} />
             <Route path="complains" element={<Complains />} />
             <Route path="revenue" element={<Revenue/>}/>
