@@ -195,33 +195,51 @@ const Orders = () => {
                       <Typography variant="h6">
                         {order.orders.foodName}
                       </Typography>
+                      <Box sx={{ marginTop: "0.5em" }}>
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            fontWeight: "bold",
+                            display: "inline-block",
+                            padding: "4px 8px",
+                            borderRadius: "4px",
+                            backgroundColor:
+                              order.status === "pending"
+                                ? "#fff9c4"
+                                : "#c8e6c9",
+                            color:
+                              order.status === "pending"
+                                ? "#f57f17"
+                                : "#1b5e20",
+                          }}
+                        >
+                          Status:{" "}
+                          {order.status.charAt(0).toUpperCase() +
+                            order.status.slice(1)}
+                        </Typography>
+                      </Box>
+
                       {order.orderType === "delivery" ? (
                         <>
-                          <Typography variant="body2">
-                            Delivery Guy: {order.deliveryGuy.name}
-                          </Typography>
-                          <Typography variant="body2">
-                            Contact: {order.deliveryGuy.phone}
-                          </Typography>
+                          {order.deliveryGuy ? (
+                            <>
+                              <Typography variant="body2">
+                                Delivery Guy: {order.deliveryGuy.name}
+                              </Typography>
+                              <Typography variant="body2">
+                                Contact: {order.deliveryGuy.phone}
+                              </Typography>
+                            </>
+                          ) : (
+                            <Typography variant="body2">
+                              Delivery information not available
+                            </Typography>
+                          )}
                         </>
                       ) : (
-                        <>
-                          <Typography variant="body2">
-                            Token: {order.token}
-                          </Typography>
-                          <Typography
-                            variant="body2"
-                            sx={{
-                              color: order.claimed ? "red" : "green",
-                              fontWeight: "bold",
-                            }}
-                          >
-                            Claimed: {order.claimed ? "Yes" : "No"}
-                          </Typography>
-                        </>
+                        <></>
                       )}
                     </Box>
-
                     {order.orders.map((orderItem, index) => (
                       <Box key={index} sx={{ marginBottom: "1em" }}>
                         <Typography variant="body2">
@@ -235,35 +253,28 @@ const Orders = () => {
                         </Typography>
                         {orderItem.toppings && (
                           <>
-                          <Box sx={{ marginTop: "0.5em" }}>
-                            <Typography
-                              variant="body2"
-                              sx={{ fontWeight: "bold" }}
+                            <Box sx={{ marginTop: "0.5em" }}>
+                              <Typography
+                                variant="body2"
+                                sx={{ fontWeight: "bold" }}
                               >
-                              Toppings:
-                            </Typography>
-                            {orderItem.toppings.map((topping, toppingIndex) => (
-                              <Box
-                              key={toppingIndex}
-                              sx={{ marginLeft: "1em" }}
-                              >
-                                <Typography variant="body2">
-                                  {topping.name} (Quantity: {topping.quantity})
-                                </Typography>
-                              </Box>
-                            ))}
-                          </Box>
-                          <Box sx={{ marginTop: "0.5em" }}>
-                            <Typography
-                              variant="body2"
-                              sx={{ fontWeight: "bold" }}
-                              >
-                              Order Staus:
-                            </Typography>
-                            
-                          </Box>
-                          
-                        </>
+                                Toppings:
+                              </Typography>
+                              {orderItem.toppings.map(
+                                (topping, toppingIndex) => (
+                                  <Box
+                                    key={toppingIndex}
+                                    sx={{ marginLeft: "1em" }}
+                                  >
+                                    <Typography variant="body2">
+                                      {topping.name} (Quantity:{" "}
+                                      {topping.quantity})
+                                    </Typography>
+                                  </Box>
+                                )
+                              )}
+                            </Box>
+                          </>
                         )}
                       </Box>
                     ))}

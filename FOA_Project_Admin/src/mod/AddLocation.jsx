@@ -50,7 +50,7 @@ const AddLocation = ({ open, onClose, onAdminAdded }) => {
     try {
       const locationData = {
         name,
-        price,
+        price: parseFloat(price), // Convert price to a number
         status: true,
         createdAt: serverTimestamp(),
       };
