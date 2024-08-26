@@ -23,7 +23,9 @@ import {
   MenuItem,
   Checkbox,
   ListItemText,
+  InputAdornment
 } from "@mui/material";
+import {  Search } from "@mui/icons-material";
 import PlaylistAddTwoToneIcon from "@mui/icons-material/PlaylistAddTwoTone";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -400,11 +402,19 @@ const Food = () => {
       </Box>
       <TextField
         fullWidth
+        
         variant="outlined"
         placeholder={`Search ${title}`}
         value={searchValue}
         onChange={(e) => setSearchValue(e.target.value)}
         sx={{ mb: 2 }}
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position="start">
+              <Search />
+            </InputAdornment>
+          ),
+        }}
       />
       <TableContainer component={Paper}>
         <Table>

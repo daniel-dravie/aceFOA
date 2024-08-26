@@ -49,7 +49,7 @@ const Revenue = () => {
           <TableRow>
             <TableCell sx={{fontWeight: "bold"}}>ORDER TYPE</TableCell>
             <TableCell align="center" sx={{fontWeight: "bold"}}>TOTAL ORDER</TableCell>
-            <TableCell align="center" sx={{fontWeight: "bold"}}>AMOUNT</TableCell>
+            <TableCell align="center" sx={{fontWeight: "bold"}}>AMOUNT GH₵</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>

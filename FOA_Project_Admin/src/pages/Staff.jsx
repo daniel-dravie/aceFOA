@@ -12,6 +12,7 @@ import {
   Avatar,
   TextField,
   Button,
+  InputAdornment
 } from "@mui/material";
 import AddStaff from "../mod/AddStaff";
 import { db } from "../helpers/firebase";
@@ -24,6 +25,7 @@ import {
   getDoc,
 } from "firebase/firestore";
 import { doc as doc2 } from "firebase/firestore";
+import {  Search } from "@mui/icons-material";
 
 const Staff = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -155,12 +157,21 @@ const Staff = () => {
         </Typography>
         <Box>
           <TextField
-            label="Search by name"
+        
+            placeholder="Search name"
             variant="outlined"
             value={searchTerm}
             onChange={handleSearchChange}
             size="small"
             sx={{ mr: 2 }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Search />
+                </InputAdornment>
+              ),
+            }}
+            
           />
           <Button variant="contained" onClick={handleOpenAddStaffDialog}>
             Add Staff
