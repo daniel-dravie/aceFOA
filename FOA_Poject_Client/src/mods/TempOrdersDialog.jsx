@@ -132,12 +132,13 @@ const TempOrdersDialog = ({ open, onClose, onRemoveOrder }) => {
     const fetchLocations = async () => {
       try {
         const locationsCollection = collection(db, "location");
-        const querySnapshot = await getDocs(locationsCollection);
+        const q = query(locationsCollection, where("status", "==", true)); // Filter where status is true
+        const querySnapshot = await getDocs(q);
         const locationsData = querySnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         }));
-        setLocations(locationsData);
+        setLocations(locationsData); // Assuming you have a state setter for locations
       } catch (error) {
         console.error("Error fetching locations:", error);
       }
