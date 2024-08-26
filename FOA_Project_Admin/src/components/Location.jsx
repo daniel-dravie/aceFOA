@@ -137,7 +137,7 @@ const Location = () => {
               </TableCell>
 
               <TableCell sx={{ textAlign: "center", fontWeight: "bold" }}>
-                Actions
+                Status
               </TableCell>
             </TableRow>
           </TableHead>

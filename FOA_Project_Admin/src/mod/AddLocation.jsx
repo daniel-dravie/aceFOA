@@ -26,7 +26,7 @@ const AddLocation = ({ open, onClose, onAdminAdded }) => {
 
   const fullScreen = useMediaQuery(theme.breakpoints.down("md"));
   const [name, setName] = useState("");
-  const [price, setPrice] = useState("");
+  const [price, setPrice] = useState(0);
   const [role, setRole] = useState("admin");
   const [location, setLocation] = useState("");
   const [locations, setLocations] = useState([]);
