@@ -64,23 +64,30 @@ const Location = () => {
     setIsAddLocationDialogOpen(false);
   };
 
-  const handleToggleStatus = async (id, isLocation) => {
+  const handleToggleStatus = async (id) => {
     try {
       const locationRef = doc2(db, "location", id);
-      const locationToUpdate = isLocation;
 
-      await updateDoc(locationRef, {
-        status: !locationToUpdate.status,
-      });
+      // Get the current document to check the current status
+      const locationDoc = await getDoc(locationRef);
+      if (locationDoc.exists()) {
+        const currentStatus = locationDoc.data().status;
 
-      if (isLocation) {
+        // Update the status in Firestore
+        await updateDoc(locationRef, {
+          status: !currentStatus,
+        });
+
+        // Update the status in the local state
         setLocations(
           locations.map((location) =>
             location.id === id
-              ? { ...location, status: !location.status }
+              ? { ...location, status: !currentStatus }
               : location
           )
         );
+      } else {
+        console.error("No such document!");
       }
     } catch (error) {
       console.error("Error updating status:", error);

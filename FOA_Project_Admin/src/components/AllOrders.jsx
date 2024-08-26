@@ -45,7 +45,7 @@ const AllOrders = () => {
       const orderList = orderSnapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
-        status: doc.data().status || "pending", // Set default status if not present
+        status: doc.data().status || "pending", 
       }));
 
       console.log("orders", orderList);
