@@ -1,5 +1,15 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Box, Button, Typography, Rating, Grid } from "@mui/material";
+import { db } from "../helpers/firebase";
+import {
+  collection,
+  getDocs,
+  query,
+  where,
+  updateDoc,
+  getDoc,
+} from "firebase/firestore";
+import { doc as doc2 } from "firebase/firestore";
 
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
@@ -22,8 +32,29 @@ const gridItemStyles = {
 };
 
 const WelcomePage = () => {
+  const [locations, setLocations] = useState([]);
+
   const { scrollYProgress } = useScroll();
   const scale = useTransform(scrollYProgress, [0, 1], [1, 1.05]);
+
+  useEffect(() => {
+    fetchLocations();
+  }, []);
+  const fetchLocations = async () => {
+    try {
+      const customerCollection = collection(db, "location");
+      const locationSnapshot = await getDocs(customerCollection);
+      const locationList = locationSnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setLocations(locationList);
+      console.log(locationList);
+    } catch (error) {
+      console.error("Error fetching location: ", error);
+    }
+  };
+
   return (
     <>
       <LazyMotion features={domAnimation}>
@@ -64,76 +95,89 @@ const WelcomePage = () => {
 
       <Box px={3} my={3} sx={{ flexGrow: 1 }}>
         <Grid container justifyContent="space-between">
-          <Grid item lg={3.8} sx={gridItemStyles}>
-            <Typography variant="body1" sx={{ fontWeight: "bold" }}>
-              <LocationOnIcon /> Winneba, South Campus
-            </Typography>
-            <Typography
-              my={1}
-              sx={{
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                display: "-webkit-box",
-                WebkitLineClamp: "2",
-                WebkitBoxOrient: "vertical",
-              }}
-            >
-              Our delivery covers all the adjoing streets around South Campus
-              including areas such as Sir Charles Beach, Prinson Area And Lagoon
-              Lodge
-            </Typography>
-            <Rating value={5} readOnly />
-            <Typography mt={1} sx={{ fontStyle: "italic", fontSize: "small" }}>
-              - {"Atta Junior"}
-            </Typography>
-          </Grid>
+          {locations.map((ele) => (
+            <>
+              <Grid item lg={3.8} sx={gridItemStyles}>
+                <Typography variant="body1" sx={{ fontWeight: "bold" }}>
+                  <LocationOnIcon /> {ele.name}
+                </Typography>
+                <Typography
+                  my={1}
+                  sx={{
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    display: "-webkit-box",
+                    WebkitLineClamp: "2",
+                    WebkitBoxOrient: "vertical",
+                  }}
+                >
+                  Our delivery covers all the adjoing streets around South
+                  Campus including areas such as Sir Charles Beach, Prinson Area
+                  And Lagoon Lodge
+                </Typography>
+                <Rating value={5} readOnly />
+                <Typography
+                  mt={1}
+                  sx={{ fontStyle: "italic", fontSize: "small" }}
+                >
+                  - {"Atta Junior"}
+                </Typography>
+              </Grid>
 
-          <Grid item lg={3.8} sx={gridItemStyles}>
-            <Typography variant="body1" sx={{ fontWeight: "bold" }}>
-              <LocationOnIcon /> Pomadze, Libery Rd
-            </Typography>
-            <Typography
-              my={1}
-              sx={{
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                display: "-webkit-box",
-                WebkitLineClamp: "2",
-                WebkitBoxOrient: "vertical",
-              }}
-            >
-              Our delivery covers all the adjoing streets around Pomadze
-              including areas such as Library, CAC, White-House
-            </Typography>
-            <Rating value={5} readOnly />
-            <Typography mt={1} sx={{ fontStyle: "italic", fontSize: "small" }}>
-              - {"Daniel Dravie"}
-            </Typography>
-          </Grid>
+              {/* <Grid item lg={3.8} sx={gridItemStyles}>
+                <Typography variant="body1" sx={{ fontWeight: "bold" }}>
+                  <LocationOnIcon /> Pomadze, Libery Rd
+                </Typography>
+                <Typography
+                  my={1}
+                  sx={{
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    display: "-webkit-box",
+                    WebkitLineClamp: "2",
+                    WebkitBoxOrient: "vertical",
+                  }}
+                >
+                  Our delivery covers all the adjoing streets around Pomadze
+                  including areas such as Library, CAC, White-House
+                </Typography>
+                <Rating value={5} readOnly />
+                <Typography
+                  mt={1}
+                  sx={{ fontStyle: "italic", fontSize: "small" }}
+                >
+                  - {"Daniel Dravie"}
+                </Typography>
+              </Grid>
 
-          <Grid item lg={3.8} sx={gridItemStyles}>
-            <Typography variant="body1" sx={{ fontWeight: "bold" }}>
-              <LocationOnIcon /> North Campus
-            </Typography>
-            <Typography
-              my={1}
-              sx={{
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                display: "-webkit-box",
-                WebkitLineClamp: "2",
-                WebkitBoxOrient: "vertical",
-              }}
-            >
-              Our delivery covers all the adjoing streets around North Campus
-              including areas such as Juction, Winnesec Junction, Trauma
-              Hospital
-            </Typography>
-            <Rating value={5} readOnly />
-            <Typography mt={1} sx={{ fontStyle: "italic", fontSize: "small" }}>
-              - {"Joseph Quainoo"}
-            </Typography>
-          </Grid>
+              <Grid item lg={3.8} sx={gridItemStyles}>
+                <Typography variant="body1" sx={{ fontWeight: "bold" }}>
+                  <LocationOnIcon /> North Campus
+                </Typography>
+                <Typography
+                  my={1}
+                  sx={{
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    display: "-webkit-box",
+                    WebkitLineClamp: "2",
+                    WebkitBoxOrient: "vertical",
+                  }}
+                >
+                  Our delivery covers all the adjoing streets around North
+                  Campus including areas such as Juction, Winnesec Junction,
+                  Trauma Hospital
+                </Typography>
+                <Rating value={5} readOnly />
+                <Typography
+                  mt={1}
+                  sx={{ fontStyle: "italic", fontSize: "small" }}
+                >
+                  - {"Joseph Quainoo"}
+                </Typography>
+              </Grid> */}
+            </>
+          ))}
         </Grid>
       </Box>
 

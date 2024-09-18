@@ -8,6 +8,9 @@ import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../helpers/firebase";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
+import * as XLSX from "xlsx";
 
 const Revenue = () => {
   const [revenue, setRevenue] = useState(0);
@@ -15,10 +18,40 @@ const Revenue = () => {
   const [pickupOrder, setPickupOrder] = useState(0);
   const [countDelivery, setCountDelivery] = useState(0);
   const [countPickup, setCountPickup] = useState(0);
-  
+
+  const handleExportExcel = () => {
+    const workBook = XLSX.utils.book_new();
+    const workSheet = XLSX.utils.json_to_sheet(
+      customers.map((customer) => ({
+        Name: `${customer.firstName} ${customer.lastName}`,
+        Address: customer.address,
+        Phone: customer.contact,
+        Location: customer.location,
+        Status: customer.status,
+      }))
+    );
+
+    XLSX.utils.book_append_sheet(workBook, workSheet, "Customers");
+    XLSX.writeFile(workBook, "customers.xlsx");
+  };
+
+  const handleExportPDF = () => {
+    const doc = new jsPDF();
+    doc.text("All Customers", 20, 10);
+    doc.autoTable({
+      head: [["Name", "Address", "Phone", "Status"]],
+      body: customers.map((customer) => [
+        `${customer.firstName} ${customer.lastName}`,
+        customer.address,
+        customer.contact,
+        customer.status,
+      ]),
+    });
+    doc.save("customers.pdf");
+  };
+
   useEffect(() => {
     const fetchTotalPrice = async () => {
-
       try {
         const revenueSnapshot = await getDocs(collection(db, "orders"));
         let revenue = 0;
@@ -33,9 +66,9 @@ const Revenue = () => {
         );
         const deliveryQuerySnapshot = await getDocs(deliveryQuery);
         let deliveryOrder = 0;
-        let countDelivery = 0
+        let countDelivery = 0;
         deliveryQuerySnapshot.forEach((doc) => {
-          countDelivery = (deliveryQuerySnapshot.size)
+          countDelivery = deliveryQuerySnapshot.size;
           deliveryOrder += doc.data().totalPrice; // Assuming each document has a `totalPrice` field
         });
 
@@ -43,20 +76,15 @@ const Revenue = () => {
           collection(db, "orders"),
           where("orderType", "==", "pickup")
         );
-        
+
         const pickUpQuerySnapshot = await getDocs(pickUpQuery);
-        
+
         let pickupOrder = 0;
-        let countPickup = 0
+        let countPickup = 0;
         pickUpQuerySnapshot.forEach((doc) => {
-          countPickup = (pickUpQuerySnapshot.size)
+          countPickup = pickUpQuerySnapshot.size;
           pickupOrder += doc.data().totalPrice; // Assuming each document has a `totalPrice` field
         });
-
-        console.log(countDelivery)
-        console.log(countPickup);
-        console.log(deliveryOrder);
-        console.log(revenue);
         setRevenue(revenue);
         setDeliveryOrder(deliveryOrder);
         setPickupOrder(pickupOrder);
@@ -70,7 +98,6 @@ const Revenue = () => {
     fetchTotalPrice();
   }, []);
 
- 
   const tax = 0.1;
   let netRevenue = revenue - tax * revenue;
   return (
@@ -96,12 +123,12 @@ const Revenue = () => {
           <TableRow>
             <TableCell>Delivery</TableCell>
             <TableCell align="center">{countDelivery}</TableCell>
-            <TableCell align="center">{deliveryOrder}</TableCell>
+            <TableCell align="center">{deliveryOrder.toFixed(2)}</TableCell>
           </TableRow>
           <TableRow>
             <TableCell>Pick-Up</TableCell>
             <TableCell align="center">{countPickup}</TableCell>
-            <TableCell align="center">{pickupOrder}</TableCell>
+            <TableCell align="center">{pickupOrder.toFixed(2)}</TableCell>
           </TableRow>
 
           <TableRow>
@@ -110,7 +137,7 @@ const Revenue = () => {
               Gross Revenue
             </TableCell>
             <TableCell align="center" sx={{ fontWeight: "bold" }}>
-              {revenue}
+              {revenue.toFixed(2)}
             </TableCell>
           </TableRow>
           <TableRow>

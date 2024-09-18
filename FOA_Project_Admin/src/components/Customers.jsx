@@ -12,7 +12,8 @@ import {
   Paper,
   Avatar,
   Box,
-  TextField, InputAdornment,
+  TextField,
+  InputAdornment,
 } from "@mui/material";
 
 import jsPDF from "jspdf";
@@ -25,7 +26,7 @@ import { Person, Search } from "@mui/icons-material";
 const Customers = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [customers, setCustomers] = useState([]);
- 
+
   const open = Boolean(anchorEl);
   const [searchCustomer, setSearchCustomer] = useState("");
   const [showAllCustomers, setShowAllcustomers] = useState(false);
@@ -85,7 +86,7 @@ const Customers = () => {
     doc.autoTable({
       head: [["Name", "Address", "Phone", "Status"]],
       body: customers.map((customer) => [
-        customer.name,
+        `${customer.firstName} ${customer.lastName}`,
         customer.address,
         customer.contact,
         customer.status,
@@ -123,52 +124,56 @@ const Customers = () => {
           {showAllCustomers ? "Hide Customers" : "Show Customers"}
         </Button>
       </div>
-      
+
       <>
-      {showAllCustomers? (<> 
-        <TextField
-          fullWidth
-          placeholder="Search Customer..."
-          label="Search Customer"
-          variant="outlined"
-          value={searchCustomer}
-          onChange={(e) => setSearchCustomer(e.target.value)}
-          sx={{ mt: 2 }}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <Search />
-              </InputAdornment>
-            ),
-          }}
-        />
-      <TableContainer component={Paper}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell sx={{ fontWeight: "bold" }}>Image</TableCell>
-                <TableCell sx={{ fontWeight: "bold" }}>Name</TableCell>
-                <TableCell sx={{ fontWeight: "bold" }}>Address</TableCell>
-                <TableCell sx={{ fontWeight: "bold" }}>Phone</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {filteredCustomer.map((customer) => (
-                <TableRow key={customer.id}>
-                  <TableCell>
-                    <Avatar src={customer.imageUrl} alt={customer.name} />
-                  </TableCell>
-                  <TableCell>
-                    {customer.firstName} {customer.lastName}
-                  </TableCell>
-                  <TableCell>{customer.address}</TableCell>
-                  <TableCell>{customer.contact}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>{" "}</>):("")}
-        
+        {showAllCustomers ? (
+          <>
+            <TextField
+              fullWidth
+              placeholder="Search Customer..."
+              label="Search Customer"
+              variant="outlined"
+              value={searchCustomer}
+              onChange={(e) => setSearchCustomer(e.target.value)}
+              sx={{ mt: 2 }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Search />
+                  </InputAdornment>
+                ),
+              }}
+            />
+            <TableContainer component={Paper}>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell sx={{ fontWeight: "bold" }}>Image</TableCell>
+                    <TableCell sx={{ fontWeight: "bold" }}>Name</TableCell>
+                    <TableCell sx={{ fontWeight: "bold" }}>Address</TableCell>
+                    <TableCell sx={{ fontWeight: "bold" }}>Phone</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {filteredCustomer.map((customer) => (
+                    <TableRow key={customer.id}>
+                      <TableCell>
+                        <Avatar src={customer.imageUrl} alt={customer.name} />
+                      </TableCell>
+                      <TableCell>
+                        {customer.firstName} {customer.lastName}
+                      </TableCell>
+                      <TableCell>{customer.address}</TableCell>
+                      <TableCell>{customer.contact}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>{" "}
+          </>
+        ) : (
+          ""
+        )}
       </>
     </Box>
   );
