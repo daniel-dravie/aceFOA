@@ -32,6 +32,9 @@ import {
   deleteDoc,
   doc,
 } from "firebase/firestore";
+import DownloadIcon from "@mui/icons-material/Download";  // Import the download icon
+import { storage } from "../helpers/firebase";
+import { ref, getDownloadURL } from "firebase/storage";
 
 const Navbar = () => {
   const [anchorElNav, setAnchorElNav] = useState(null);
@@ -143,12 +146,15 @@ const Navbar = () => {
   const handleOpenUserMenu = (event) => {
     setAnchorElUser(event.currentTarget);
   };
-  const handleOpenComplaints = () => {
-    navigate("/client/complains");
-  };
+  
 
   const handleCloseNavMenu = () => {
     setAnchorElNav(null);
+  };
+
+  const handleOpenComplaints = () => {
+    setMessagesCount(0); // Reset messages count to 0
+    navigate("/client/complains");
   };
 
   const handleCloseUserMenu = () => {
@@ -370,6 +376,7 @@ const Navbar = () => {
                   <PlaylistAddCheckIcon />
                 </IconButton>
               </Tooltip>
+
               <Tooltip title="Messages">
                 <IconButton
                   onClick={handleOpenComplaints}
