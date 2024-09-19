@@ -1,11 +1,22 @@
 import React, { useState, useEffect } from "react";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import Paper from "@mui/material/Paper";
+
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Tooltip,
+  IconButton,
+  Button,
+  Menu,
+  MenuItem,
+  Container,
+  TextField,
+  InputAdornment,
+} from "@mui/material";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../helpers/firebase";
 import jsPDF from "jspdf";
@@ -19,35 +30,52 @@ const Revenue = () => {
   const [countDelivery, setCountDelivery] = useState(0);
   const [countPickup, setCountPickup] = useState(0);
 
-  const handleExportExcel = () => {
-    const workBook = XLSX.utils.book_new();
-    const workSheet = XLSX.utils.json_to_sheet(
-      customers.map((customer) => ({
-        Name: `${customer.firstName} ${customer.lastName}`,
-        Address: customer.address,
-        Phone: customer.contact,
-        Location: customer.location,
-        Status: customer.status,
-      }))
-    );
+  const handlePrintRevenueExcel = () => {
+    // Define the revenue data
+    const orderData = [
+      ["Order Type", "Total Orders", "Amount (GH₵)"],
+      ["Delivery", countDelivery, deliveryOrder.toFixed(2)],
+      ["Pick-Up", countPickup, pickupOrder.toFixed(2)],
+      ["Gross Revenue", "", revenue.toFixed(2)],
+      ["Tax", `${(tax*100).toFixed(1)}%`, (tax * revenue).toFixed(2)],
+      ["Net revenue", "", netRevenue.toFixed(2)],
+    ];
 
-    XLSX.utils.book_append_sheet(workBook, workSheet, "Customers");
-    XLSX.writeFile(workBook, "customers.xlsx");
+   
+
+    // Create a new workbook and add two sheets
+    const wb = XLSX.utils.book_new();
+
+    // Convert the orderData array to a sheet
+    const orderSheet = XLSX.utils.aoa_to_sheet(orderData);
+    
+    // Append both sheets to the workbook
+    XLSX.utils.book_append_sheet(wb, orderSheet, "Order Data");
+   
+
+    // Export the workbook to Excel format
+    XLSX.writeFile(wb, "revenue_details.xlsx");
   };
 
-  const handleExportPDF = () => {
+  const handlePrintRevenuePDF = () => {
     const doc = new jsPDF();
-    doc.text("All Customers", 20, 10);
+    doc.text("Revenue Details", 20, 10);
     doc.autoTable({
-      head: [["Name", "Address", "Phone", "Status"]],
-      body: customers.map((customer) => [
-        `${customer.firstName} ${customer.lastName}`,
-        customer.address,
-        customer.contact,
-        customer.status,
-      ]),
+      head: [["Order Type", "Total Orders", "Amount (GH₵)"]],
+      body: [
+        ["Delivery", countDelivery, deliveryOrder.toFixed(2)],
+        ["Pick-Up", countPickup, pickupOrder.toFixed(2)],
+      ],
     });
-    doc.save("customers.pdf");
+    doc.autoTable({
+      head: [["", "Description", "Amount (GH₵)"]],
+      body: [
+        ["", "Gross Revenue", revenue.toFixed(2)],
+        ["", `Tax (${(tax * 100).toFixed(1)}%)`, (tax * revenue).toFixed(2)],
+        ["", "Net Revenue", netRevenue.toFixed(2)],
+      ],
+    });
+    doc.save("revenue_details.pdf");
   };
 
   useEffect(() => {
@@ -100,61 +128,129 @@ const Revenue = () => {
 
   const tax = 0.1;
   let netRevenue = revenue - tax * revenue;
-  return (
-    <TableContainer component={Paper} sx={{ marginTop: 5 }}>
-      <Table>
-        <TableHead>
-          <TableRow>
-            <TableCell align="center" colSpan={2} sx={{ fontWeight: "bold" }}>
-              REVENUE DETAILS
-            </TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell sx={{ fontWeight: "bold" }}>ORDER TYPE</TableCell>
-            <TableCell align="center" sx={{ fontWeight: "bold" }}>
-              TOTAL ORDER
-            </TableCell>
-            <TableCell align="center" sx={{ fontWeight: "bold" }}>
-              AMOUNT GH₵
-            </TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          <TableRow>
-            <TableCell>Delivery</TableCell>
-            <TableCell align="center">{countDelivery}</TableCell>
-            <TableCell align="center">{deliveryOrder.toFixed(2)}</TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell>Pick-Up</TableCell>
-            <TableCell align="center">{countPickup}</TableCell>
-            <TableCell align="center">{pickupOrder.toFixed(2)}</TableCell>
-          </TableRow>
 
-          <TableRow>
-            <TableCell rowSpan={3} />
-            <TableCell colSpan={1} sx={{ fontWeight: "bold" }}>
-              Gross Revenue
-            </TableCell>
-            <TableCell align="center" sx={{ fontWeight: "bold" }}>
-              {revenue.toFixed(2)}
-            </TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell sx={{ fontWeight: "bold" }}>Tax</TableCell>
-            <TableCell align="center">{`${(tax * 100).toFixed(0)}%`}</TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell colSpan={1} sx={{ fontWeight: "bold" }}>
-              Net Revenue
-            </TableCell>
-            <TableCell align="center" sx={{ fontWeight: "bold" }}>
-              {netRevenue.toFixed(2)}
-            </TableCell>
-          </TableRow>
-        </TableBody>
-      </Table>
-    </TableContainer>
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+  const [anchorEl, setAnchorEl] = useState(null);
+  const open = Boolean(anchorEl);
+
+  return (
+    <>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        <Button
+          aria-controls={open ? "basic-menu" : undefined}
+          aria-haspopup="true"
+          aria-expanded={open ? "true" : undefined}
+          onClick={handleClick}
+          variant="contained"
+          sx={{ mb: 2 }}
+        >
+          PRINT REVENUE DETAILS
+        </Button>
+
+        <Menu
+          id="basic-menu"
+          anchorEl={anchorEl}
+          open={open}
+          onClose={handleClose}
+          MenuListProps={{
+            "aria-labelledby": "basic-button",
+          }}
+        >
+          <MenuItem onClick={handlePrintRevenuePDF}>
+            <Button
+              sx={{
+                "&:hover": {
+                  background: "#1565C0",
+                  color: "white",
+                },
+              }}
+            >
+              PDF
+            </Button>
+          </MenuItem>
+          <MenuItem onClick={handlePrintRevenueExcel}>
+            <Button
+              sx={{
+                "&:hover": {
+                  background: "#1565C0",
+                  color: "white",
+                },
+              }}
+            >
+              Excel
+            </Button>
+          </MenuItem>
+        </Menu>
+      </div>
+      <TableContainer component={Paper} sx={{ marginTop: 5 }}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell align="center" colSpan={2} sx={{ fontWeight: "bold" }}>
+                REVENUE DETAILS
+              </TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell sx={{ fontWeight: "bold" }}>ORDER TYPE</TableCell>
+              <TableCell align="center" sx={{ fontWeight: "bold" }}>
+                TOTAL ORDER
+              </TableCell>
+              <TableCell align="center" sx={{ fontWeight: "bold" }}>
+                AMOUNT GH₵
+              </TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            <TableRow>
+              <TableCell>Delivery</TableCell>
+              <TableCell align="center">{countDelivery}</TableCell>
+              <TableCell align="center">{deliveryOrder.toFixed(2)}</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell>Pick-Up</TableCell>
+              <TableCell align="center">{countPickup}</TableCell>
+              <TableCell align="center">{pickupOrder.toFixed(2)}</TableCell>
+            </TableRow>
+
+            <TableRow>
+              <TableCell rowSpan={3} />
+              <TableCell colSpan={1} sx={{ fontWeight: "bold" }}>
+                Gross Revenue
+              </TableCell>
+              <TableCell align="center" sx={{ fontWeight: "bold" }}>
+                {revenue.toFixed(2)}
+              </TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell sx={{ fontWeight: "bold" }}>Tax</TableCell>
+              <TableCell align="center">{`${(tax * 100).toFixed(
+                1
+              )}%`}</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell colSpan={1} sx={{ fontWeight: "bold" }}>
+                Net Revenue
+              </TableCell>
+              <TableCell align="center" sx={{ fontWeight: "bold" }}>
+                {netRevenue.toFixed(2)}
+              </TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </>
   );
 };
 
