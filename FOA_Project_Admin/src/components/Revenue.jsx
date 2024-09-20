@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-
 import {
   Table,
   TableBody,
@@ -8,14 +7,10 @@ import {
   TableHead,
   TableRow,
   Paper,
-  Tooltip,
-  IconButton,
   Button,
   Menu,
   MenuItem,
-  Container,
   TextField,
-  InputAdornment,
 } from "@mui/material";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../helpers/firebase";
@@ -29,31 +24,33 @@ const Revenue = () => {
   const [pickupOrder, setPickupOrder] = useState(0);
   const [countDelivery, setCountDelivery] = useState(0);
   const [countPickup, setCountPickup] = useState(0);
+  const [tax, setTax] = useState(10); // Initialize tax as 10%
+
+  const handleTaxChange = (event) => {
+    const newTax = parseFloat(event.target.value);
+
+    // Prevent negative tax values
+    if (newTax >= 0) {
+      setTax(newTax); // Update the tax rate
+    } else {
+      setTax(0); // Reset to 0 if the value is negative
+    }
+  };
 
   const handlePrintRevenueExcel = () => {
-    // Define the revenue data
     const orderData = [
       ["Order Type", "Total Orders", "Amount (GH₵)"],
       ["Delivery", countDelivery, deliveryOrder.toFixed(2)],
       ["Pick-Up", countPickup, pickupOrder.toFixed(2)],
       ["Gross Revenue", "", revenue.toFixed(2)],
-      ["Tax", `${(tax*100).toFixed(1)}%`, (tax * revenue).toFixed(2)],
+      ["Tax", `${tax.toFixed(1)}%`, (tax / 100 * revenue).toFixed(2)],
       ["Net revenue", "", netRevenue.toFixed(2)],
     ];
 
-   
-
-    // Create a new workbook and add two sheets
     const wb = XLSX.utils.book_new();
-
-    // Convert the orderData array to a sheet
     const orderSheet = XLSX.utils.aoa_to_sheet(orderData);
-    
-    // Append both sheets to the workbook
     XLSX.utils.book_append_sheet(wb, orderSheet, "Order Data");
-   
 
-    // Export the workbook to Excel format
     XLSX.writeFile(wb, "revenue_details.xlsx");
   };
 
@@ -71,7 +68,7 @@ const Revenue = () => {
       head: [["", "Description", "Amount (GH₵)"]],
       body: [
         ["", "Gross Revenue", revenue.toFixed(2)],
-        ["", `Tax (${(tax * 100).toFixed(1)}%)`, (tax * revenue).toFixed(2)],
+        ["", `Tax (${tax.toFixed(1)}%)`, (tax / 100 * revenue).toFixed(2)],
         ["", "Net Revenue", netRevenue.toFixed(2)],
       ],
     });
@@ -97,21 +94,20 @@ const Revenue = () => {
         let countDelivery = 0;
         deliveryQuerySnapshot.forEach((doc) => {
           countDelivery = deliveryQuerySnapshot.size;
-          deliveryOrder += doc.data().totalPrice; // Assuming each document has a `totalPrice` field
+          deliveryOrder += doc.data().totalPrice;
         });
 
         const pickUpQuery = query(
           collection(db, "orders"),
           where("orderType", "==", "pickup")
         );
-
         const pickUpQuerySnapshot = await getDocs(pickUpQuery);
 
         let pickupOrder = 0;
         let countPickup = 0;
         pickUpQuerySnapshot.forEach((doc) => {
           countPickup = pickUpQuerySnapshot.size;
-          pickupOrder += doc.data().totalPrice; // Assuming each document has a `totalPrice` field
+          pickupOrder += doc.data().totalPrice;
         });
         setRevenue(revenue);
         setDeliveryOrder(deliveryOrder);
@@ -126,8 +122,7 @@ const Revenue = () => {
     fetchTotalPrice();
   }, []);
 
-  const tax = 0.1;
-  let netRevenue = revenue - tax * revenue;
+  let netRevenue = revenue - (tax / 100) * revenue;
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -193,7 +188,19 @@ const Revenue = () => {
             </Button>
           </MenuItem>
         </Menu>
+
+        {/* Tax Input Field */}
+        <TextField
+          label="Tax on Gross(%)"
+          type="number"
+          variant="outlined"
+          value={tax.toFixed(1)} // Display the current tax value
+          onChange={handleTaxChange} // Handle changes in tax
+          sx={{ ml: 2, mb: 2 }}
+          InputProps={{ inputProps: { min: 0 } }} // Ensure input is non-negative
+        />
       </div>
+
       <TableContainer component={Paper} sx={{ marginTop: 5 }}>
         <Table>
           <TableHead>
@@ -235,9 +242,7 @@ const Revenue = () => {
             </TableRow>
             <TableRow>
               <TableCell sx={{ fontWeight: "bold" }}>Tax</TableCell>
-              <TableCell align="center">{`${(tax * 100).toFixed(
-                1
-              )}%`}</TableCell>
+              <TableCell align="center">{`${tax.toFixed(1)}%`}</TableCell>
             </TableRow>
             <TableRow>
               <TableCell colSpan={1} sx={{ fontWeight: "bold" }}>
